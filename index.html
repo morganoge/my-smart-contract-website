@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Contract Interaction</title>
+    <!-- Importing ethers.js from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+</head>
+<body>
+    <h1>Interact with Smart Contract</h1>
+
+    <button id="connectWalletBtn">Connect Wallet</button>
+
+    <div id="accountInfo" style="display:none;">
+        <h2>Account Address:</h2>
+        <p id="accountAddress"></p>
+        <button id="stakeBtn">Stake</button>
+        <button id="withdrawBtn">Withdraw</button>
+        <button id="claimRewardsBtn">Claim Rewards</button>
+    </div>
+
+    <script>
+        let provider, signer, contract;
+        let contractAddress = '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'; // Replace with your contract address
+        let contractABI = [/* [
+  {
+    "inputs": [],
+    "name": "claimRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRewardRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stake",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawContractBalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getRewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getStakedBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rewardRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "stakes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastStakedBlock",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+ */]; // Replace with your contract's ABI
+
+        // Step 1: Connect to the wallet using ethers.js
+        const connectWalletButton = document.getElementById("connectWalletBtn");
+        const accountInfoDiv = document.getElementById("accountInfo");
+        const accountAddressElem = document.getElementById("accountAddress");
+
+        // Connect wallet function
+        async function connectWallet() {
+            if (window.ethereum) {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                signer = provider.getSigner();
+                const userAddress = await signer.getAddress();
+                accountAddressElem.innerText = userAddress;
+                accountInfoDiv.style.display = "block";
+
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+            } else {
+                alert("Please install MetaMask to connect to the wallet.");
+            }
+        }
+
+        // Event listener for the Connect Wallet button
+        connectWalletButton.addEventListener("click", connectWallet);
+
+        // Step 2: Interact with the contract's methods
+
+        // Function to stake
+        async function stakeTokens() {
+            try {
+                const amount = ethers.utils.parseEther("0.1"); // Example: stake 0.1 ETH
+                const tx = await contract.stake({ value: amount });
+                await tx.wait();
+                alert("Staking successful!");
+            } catch (err) {
+                console.error("Error staking tokens:", err);
+            }
+        }
+
+        // Function to withdraw
+        async function withdrawTokens() {
+            try {
+                const amount = ethers.utils.parseEther("0.05"); // Example: withdraw 0.05 ETH
+                const tx = await contract.withdraw(amount);
+                await tx.wait();
+                alert("Withdrawal successful!");
+            } catch (err) {
+                console.error("Error withdrawing tokens:", err);
+            }
+        }
+
+        // Function to claim rewards
+        async function claimRewards() {
+            try {
+                const tx = await contract.claimRewards();
+                await tx.wait();
+                alert("Rewards claimed successfully!");
+            } catch (err) {
+                console.error("Error claiming rewards:", err);
+            }
+        }
+
+        // Button event listeners for contract interactions
+        document.getElementById("stakeBtn").addEventListener("click", stakeTokens);
+        document.getElementById("withdrawBtn").addEventListener("click", withdrawTokens);
+        document.getElementById("claimRewardsBtn").addEventListener("click", claimRewards);
+    </script>
+</body>
+</html>
